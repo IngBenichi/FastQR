@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from urllib.parse import quote
 import qrcode
 import os
 from PIL import Image
@@ -25,8 +26,8 @@ async def generate_qr_code(
     bg_color: str = "white",
     format: str = "png"
 ):
-    filename = f"{text.replace(' ', '_')}.{format}"
-    file_path = os.path.join(QR_FOLDER, filename)
+    safe_filename = f"{quote(text, safe='')}.{format}"
+    file_path = os.path.join(QR_FOLDER, safe_filename)
 
     if not os.path.exists(file_path):
         qr = qrcode.QRCode(box_size=size, border=2)
@@ -36,15 +37,15 @@ async def generate_qr_code(
         img = qr.make_image(fill_color=fg_color, back_color=bg_color)
         img.save(file_path, format=format.upper())
 
-    qr_url = f"/static/qr_codes/{filename}"
+    qr_url = f"/static/qr_codes/{safe_filename}"
     qr_cache[text] = qr_url
 
     return JSONResponse(content={"message": "Código QR generado", "qr_url": qr_url})
 
 @app.post("/generate_qr_with_logo/")
 async def generate_qr_with_logo(text: str, logo_url: str = "static/logo.png"):
-    filename = f"{text.replace(' ', '_')}_logo.png"
-    file_path = os.path.join(QR_FOLDER, filename)
+    safe_filename = f"{quote(text, safe='')}_logo.png"
+    file_path = os.path.join(QR_FOLDER, safe_filename)
 
     if not os.path.exists(file_path):
         qr = qrcode.QRCode(box_size=10, border=2)
@@ -65,5 +66,5 @@ async def generate_qr_with_logo(text: str, logo_url: str = "static/logo.png"):
 
         img.save(file_path)
 
-    qr_url = f"/static/qr_codes/{filename}"
+    qr_url = f"/static/qr_codes/{safe_filename}"
     return JSONResponse(content={"message": "Código QR con logo generado", "qr_url": qr_url})
