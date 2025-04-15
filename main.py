@@ -15,7 +15,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 qr_cache = {}
 
 # Ruta donde se guardarán los QR
-QR_FOLDER = "qr_api/static/qr_codes"
+QR_FOLDER = "static/qr_codes"
 os.makedirs(QR_FOLDER, exist_ok=True)
 
 @app.post("/generate_qr/")
